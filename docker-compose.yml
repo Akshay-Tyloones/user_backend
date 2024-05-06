@@ -1,32 +1,42 @@
 version: '1'
 
 services:
-  web:
+  web_service:
     build: .
+    container_name: user_backend_container
     environment:
       - PYTHONUNBUFFERED=1
-      - DB_HOST=postgres
+      - DB_HOST=database_service
       - DB_PORT=5432
       - DB_NAME=seprate_backend
       - DB_USER=postgres
       - DB_PASSWORD=Akshay
     command: bash -c "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
     ports:
-      - "7000:8000"
+      - "8000:8000"
     volumes:
       - .:/app
     depends_on:
-      - postgres
+      - database_service
+    networks:
+      - user_net
     
     
-  postgres:
-    image: postgres
+  database_service:
+    container_name: user_backend_postgres
+    image: postgres:16.2-bullseye
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - user_postgres_data:/var/lib/postgresql/data
     environment:
       POSTGRES_DB: seprate_backend
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: Akshay
+    networks:
+      - user_net
+
+networks:
+  user_net:
+    driver: bridge
 
 volumes:
- postgres_data:
+ user_postgres_data:
