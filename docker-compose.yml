@@ -1,0 +1,32 @@
+version: '1'
+
+services:
+  web:
+    build: .
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=seprate_backend
+      - DB_USER=postgres
+      - DB_PASSWORD=Akshay
+    command: bash -c "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    ports:
+      - "7000:8000"
+    volumes:
+      - .:/app
+    depends_on:
+      - postgres
+    
+    
+  postgres:
+    image: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: seprate_backend
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Akshay
+
+volumes:
+ postgres_data:
