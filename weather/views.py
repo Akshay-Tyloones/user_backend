@@ -58,11 +58,32 @@ def signup(request):
             return JsonResponse(response_data)
         
         
-def verify_email(request, email):
+import json
+import boto3
+from django.conf import settings
+from django.http import JsonResponse
+from .models import UserDetails
+
+def verify_email(request):
     if request.method == 'POST':
         data = json.loads(request.body)
         verification_code = data.get('verification_code')
 
+      
+        email = request.headers.get('Email')
+        print('email', email)
+        print('verification_code', verification_code)
+
+
+      
+        if not email:
+            response_data = format_api_response(success=False, message="Email is required in headers")
+            return JsonResponse(response_data)
+        if not verification_code:
+            response_data = format_api_response(success=False, message="Verification code is required")
+            return JsonResponse(response_data, status=400)
+
+       
         cognito_client = boto3.client('cognito-idp', region_name='ap-south-1')
 
         try:
@@ -71,13 +92,18 @@ def verify_email(request, email):
                 Username=email,
                 ConfirmationCode=verification_code
             )
-            user = UserDetails.objects.get(email=email)
-            user.is_verified = True
-            user.save()
-            print('response -> ' ,user.is_verified)
+            try:
+                user = UserDetails.objects.get(email=email)
+                user.is_verified = True
+                user.save()
+            except UserDetails.DoesNotExist:
+                response_data = format_api_response(success=False, message="user does not exist")
+                return JsonResponse(response_data) 
 
+     
             response_data = format_api_response(success=True, message="verification success")
-            return JsonResponse(response_data)  
+            return JsonResponse(response_data)
+
         except cognito_client.exceptions.UserNotFoundException as e:
             response_data = format_api_response(success=False, message="user does not exist", error=str(e))
             return JsonResponse(response_data)
@@ -88,8 +114,9 @@ def verify_email(request, email):
             response_data = format_api_response(success=False, message="user is already confirmed", error=str(e))
             return JsonResponse(response_data)
         except Exception as e:
-            response_data = format_api_response(success=False, message="error occur", error=str(e))
+            response_data = format_api_response(success=False, message="error occurred", error=str(e))
             return JsonResponse(response_data)
+
 
 
 
