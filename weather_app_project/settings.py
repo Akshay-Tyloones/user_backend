@@ -59,7 +59,8 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'weather_app_project.urls'
 
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:5173',  
+    'http://localhost:5173',
+    'http://13.234.43.50:8000/'  
 ]
 CORS_ALLOW_HEADERS = ['Content-Type', 'email', 'City', 'Authorization'] 
 
