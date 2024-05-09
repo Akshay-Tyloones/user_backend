@@ -70,12 +70,10 @@ def verify_email(request):
         verification_code = data.get('verification_code')
 
       
-        email = request.headers.get('Email')
+        email = request.headers.get('email')
         print('email', email)
         print('verification_code', verification_code)
 
-
-      
         if not email:
             response_data = format_api_response(success=False, message="Email is required in headers")
             return JsonResponse(response_data)
@@ -124,13 +122,29 @@ def verify_email(request):
 def get_all_users(request):
     try:
         users = UserDetails.objects.all()
-        user_data = [{'cognito_id' :user.cognito_user,'username': user.username, 'email': user.email, 'phone_number':user.phone_number, 'first_name' : user.first_name, 'last_name':user.last_name, 'is_verified':user.is_verified, 'image_url':user.image_url} for user in users]
+        if not users:
+            response_data = format_api_response(success=True, message='no users are present')
+            return JsonResponse(response_data)
+        
+        user_data = [{
+            'cognito_id': user.cognito_user,
+            'username': user.username,
+            'email': user.email,
+            'phone_number': user.phone_number,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'is_verified': user.is_verified,
+            'image_url': user.image_url
+        } for user in users]
+
         print("user_details->>>", user_data)
         response_data = format_api_response(success=True, data=user_data, message='user details retrieved successfully',)
         return JsonResponse(response_data)
+    
     except Exception as e:
         response_data = format_api_response(success=False, message='an error occurred while retrieving user details', error=str(e))
         return JsonResponse(response_data, status=500)
+
 
 
 

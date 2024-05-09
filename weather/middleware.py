@@ -15,9 +15,9 @@ class TokenMiddleware:
         if access_token:
             access_token = access_token.split(' ')[1]
         protected_urls = [
-                    {'path': '/get-image/', 'method': 'GET'},
-                    {'path': '/add-to-favourite/', 'method': 'POST'},
-                    {'path': '/upload/', 'method':'POST'},
+                    {'path': '/api/user/user-details/', 'method': 'GET'},
+                    # {'path': '/add-to-favourite/', 'method': 'POST'},
+                    # {'path': '/upload/', 'method':'POST'},
                 ]
         for url_data in protected_urls:
             if request.path == url_data['path'] and request.method == url_data['method']:

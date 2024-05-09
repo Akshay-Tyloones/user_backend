@@ -61,7 +61,7 @@ ROOT_URLCONF = 'weather_app_project.urls'
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',  
 ]
-CORS_ALLOW_HEADERS = ['Content-Type', 'Email', 'City', 'Authorization'] 
+CORS_ALLOW_HEADERS = ['Content-Type', 'email', 'City', 'Authorization'] 
 
 TEMPLATES = [
     {
