@@ -16,8 +16,6 @@ class TokenMiddleware:
             access_token = access_token.split(' ')[1]
         protected_urls = [
                     {'path': '/api/user/user-details/', 'method': 'GET'},
-                    # {'path': '/add-to-favourite/', 'method': 'POST'},
-                    # {'path': '/upload/', 'method':'POST'},
                 ]
         for url_data in protected_urls:
             if request.path == url_data['path'] and request.method == url_data['method']:
@@ -48,12 +46,15 @@ class TokenMiddleware:
             )
             return decoded_token
         except jwt.ExpiredSignatureError as e:
+            print('error->',e)
             response_data = format_api_response(success=False, message='token expired', error=str(e))
             return JsonResponse(response_data)
-        except jwt.JWTError:
+        except jwt.JWTError as e:
+            print('error->',e)
             response_data = format_api_response(success=False, message='invalid token', error=str(e))
             return JsonResponse(response_data)
         except Exception as e:
+            print('error->',e)
             response_data = format_api_response(success=False, message='error occur', error=str(e))
             return JsonResponse(response_data)
         
