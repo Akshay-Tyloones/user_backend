@@ -10,6 +10,11 @@ class UserDetails(AbstractUser):
 
     def __str__(self) -> str:
         return self
+    
+class Subscription(models.Model):
+    username = models.CharField(max_length=50, null=True)
+    event = models.CharField(max_length=100)
+    connection_id = models.CharField(max_length=100)
 
 
 

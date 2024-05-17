@@ -1,7 +1,11 @@
 from .models import UserDetails
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
 from django.conf import settings
 from django.http import JsonResponse
 from .utils import format_api_response
+from .models import Subscription
 from dotenv import load_dotenv
 import boto3
 import json
@@ -117,8 +121,6 @@ def verify_email(request):
 
 
 
-
-
 def get_all_users(request):
     try:
         cognito_id = request.cognito_id
@@ -149,6 +151,76 @@ def get_all_users(request):
     except Exception as e:
         response_data = format_api_response(success=False, message='an error occurred while retrieving user details', error=str(e))
         return JsonResponse(response_data, status=500)
+    
+
+
+
+
+class ConnectView(APIView):
+    def post(self, request):
+        return Response({"message": "connected to websocket server."})
+
+def disconnect(request):
+    return JsonResponse({"message": "disconnected from websocket server."})
+
+
+
+class SubscribeView(APIView):
+    def post(self, request):
+        try:
+            data = request.data
+            event = data.get('event')
+            print('event->>', event)
+            username = data.get('username')
+            print('username->>', username)
+            connection_id = request.headers.get('Connectionid')
+            print('connection_id->>>',connection_id)
+
+            if username is None:
+                return Response({"error": "username value is required"}, status=status.HTTP_400_BAD_REQUEST)
+            if event is None:
+                return Response({"error": "event value is required"}, status=status.HTTP_400_BAD_REQUEST)
+            elif connection_id is None:
+                return Response({"error": "connection_id value is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+            Subscription.objects.create(username=username, event=event, connection_id=connection_id)
+
+            return Response({"status": "subscribed"}, status=status.HTTP_201_CREATED)
+        except json.JSONDecodeError:
+            return Response({"error": "invalid json data in request body."}, status=status.HTTP_400_BAD_REQUEST)
+
+    def get(self, request):
+        return Response({"error": "only post requests are supported."}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+from django.http import JsonResponse
+
+class UserDetailsView(APIView):
+    def get(self, request):
+        try:
+            subscriptions = Subscription.objects.exclude(username__isnull=True)
+            user_connections = [
+                {
+                    'username': subscription.username,
+                    'connection_id': subscription.connection_id
+                }
+                for subscription in subscriptions
+            ]
+
+            return JsonResponse({'user_connections': user_connections})  
+        except Exception as e:
+            error_message = str(e)
+            return JsonResponse({"error": error_message}, status=status.HTTP_500_INTERNAL_SERVER_ERROR, safe=False)  # Set safe=False
+
+    
+
+
+
+
+
+
+
+
 
 
 
