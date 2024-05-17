@@ -158,7 +158,7 @@ def get_all_users(request):
 
 class ConnectView(APIView):
     def post(self, request):
-        return Response({"message": "connected to websocket server."})
+        return JsonResponse({"message": "connected to websocket server."})
 
 def disconnect(request):
     return JsonResponse({"message": "disconnected from websocket server."})
