@@ -184,17 +184,33 @@ class SubscribeView(APIView):
                 return Response({"error": "connection_id value is required"}, status=status.HTTP_400_BAD_REQUEST)
 
             Subscription.objects.create(username=username, event=event, connection_id=connection_id)
+            self.emit_event_to_clients(username, connection_id)
 
             return Response({"status": "subscribed"}, status=status.HTTP_201_CREATED)
         except json.JSONDecodeError:
             return Response({"error": "invalid json data in request body."}, status=status.HTTP_400_BAD_REQUEST)
+        
+    def emit_event_to_clients(self, username, connection_id):
+        client = boto3.client('apigatewaymanagementapi', endpoint_url='https://srmj9tj6rb.execute-api.ap-south-1.amazonaws.com/dev/@connections')
+
+        # Fetch all subscriptions
+        subscriptions = Subscription.objects.all()
+        for subscription in subscriptions:
+            if subscription.connection_id != connection_id:  # Exclude the current user
+                try:
+                    response = client.post_to_connection(
+                        Data=json.dumps({"event": "user_added", "username": username}),
+                        ConnectionId=subscription.connection_id
+                    )
+                except client.exceptions.GoneException:
+                    subscription.delete()
 
     def get(self, request):
         return Response({"error": "only post requests are supported."}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
     
+    
 
-from django.http import JsonResponse
-
+            
 class UserDetailsView(APIView):
     def get(self, request):
         try:
