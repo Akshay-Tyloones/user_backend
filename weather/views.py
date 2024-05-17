@@ -191,7 +191,7 @@ class SubscribeView(APIView):
             return Response({"error": "invalid json data in request body."}, status=status.HTTP_400_BAD_REQUEST)
         
     def emit_event_to_clients(self, username, connection_id):
-        client = boto3.client('apigatewaymanagementapi', endpoint_url='https://srmj9tj6rb.execute-api.ap-south-1.amazonaws.com/dev/@connections')
+        client = boto3.client('apigatewaymanagementapi', region_name='ap-south-1', endpoint_url='https://srmj9tj6rb.execute-api.ap-south-1.amazonaws.com/dev/@connections')
 
         # Fetch all subscriptions
         subscriptions = Subscription.objects.all()
